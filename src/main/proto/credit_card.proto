@@ -2,14 +2,15 @@ syntax = "proto2";
 
 package com.landoop.examples.lenses.serde.protobuf;
 
-option java_package = "com.landoop.examples.lenses.serde.protobuf";
-option java_outer_classname = "CreditCard";
+option java_package = "com.landoop.examples.lenses.serde.protobuf.generated";
+option java_outer_classname = "CardData";
 
 message CreditCard {
   required string name = 1;
   required string country = 2;
   required string currency = 3;
-  required boolean blocked = 4;
+  required string cardNumber = 4;
+  required bool blocked = 5;
 
   enum CardType {
       VISA = 0;
@@ -17,5 +18,5 @@ message CreditCard {
       AMEX = 2;
     }
 
-  required CardType cardType = 5;
+  required CardType cardType = 6;
 }
