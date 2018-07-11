@@ -12,51 +12,55 @@ import java.io.IOException;
 import java.util.Properties;
 
 public class LatLngSerde implements Serde {
-    @Override
-    public Serializer serializer(String s, Properties properties) {
-        return new Serializer() {
+  private Schema schema = SchemaBuilder.builder()
+      .record("lat_lng")
+      .fields()
+      .requiredDouble("lat")
+      .requiredDouble("lng")
+      .endRecord();
 
-            @Override
-            public byte[] serialize(GenericRecord record) throws IOException {
-                double lat = (double) record.get("lat");
-                double lng = (double) record.get("lng");
-                String data = lat + ":" + lng;
-                return data.getBytes("UTF-8");
-            }
+  @Override
+  public Serializer serializer(Properties properties) {
+    return new Serializer() {
 
-            @Override
-            public void close() throws IOException {
-            }
-        };
-    }
+      @Override
+      public byte[] serialize(GenericRecord record) throws IOException {
+        double lat = (double) record.get("lat");
+        double lng = (double) record.get("lng");
+        String data = lat + ":" + lng;
+        return data.getBytes("UTF-8");
+      }
 
-    @Override
-    public Deserializer deserializer(String s, Properties properties) {
-        return new Deserializer() {
-            @Override
-            public GenericRecord deserialize(byte[] bytes) throws IOException {
+      @Override
+      public void close() throws IOException {
+      }
+    };
+  }
 
-                Schema schema = SchemaBuilder.builder()
-                        .record("lat_lng")
-                        .fields()
-                        .requiredDouble("lat")
-                        .requiredDouble("lng")
-                        .endRecord();
+  @Override
+  public Deserializer deserializer(Properties properties) {
+    return new Deserializer() {
+      @Override
+      public GenericRecord deserialize(byte[] bytes) throws IOException {
+        String data = new String(bytes);
+        String[] tokens = data.split(":");
+        double lat = Double.parseDouble(tokens[0]);
+        double lng = Double.parseDouble(tokens[1]);
 
-                String data = new String(bytes);
-                String[] tokens = data.split(":");
-                double lat = Double.parseDouble(tokens[0]);
-                double lng = Double.parseDouble(tokens[1]);
+        GenericRecord record = new GenericData.Record(schema);
+        record.put("lat", lat);
+        record.put("lng", lng);
+        return record;
+      }
 
-                GenericRecord record = new GenericData.Record(schema);
-                record.put("lat", lat);
-                record.put("lng", lng);
-                return record;
-            }
+      @Override
+      public void close() throws IOException {
+      }
+    };
+  }
 
-            @Override
-            public void close() throws IOException {
-            }
-        };
-    }
+  @Override
+  public Schema getSchema() {
+    return schema;
+  }
 }
